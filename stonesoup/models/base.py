@@ -238,3 +238,16 @@ class GaussianModel(Model):
     @abstractmethod
     def covar(self):
         """Model covariance"""
+
+class ExistenceModel(Base):
+    """ExistenceModel class
+
+    Base/Abstract class for all existence probability models"""
+
+    def model_probability(self,probability,*args,**kwargs):
+        """
+        An existence model method that returns the model probability for birth
+        or death using the Probability class wrapper.
+        """
+        return Probability(probability)
+

@@ -2,8 +2,8 @@
 from ..base import Property
 from .array import CovarianceMatrix
 from .base import Type
-from .state import (State, GaussianState, ParticleState, SqrtGaussianState,
-                    TaggedWeightedGaussianState)
+from .state import (State, GaussianState, GaussianStateWithExistence, ParticleState,
+                    SqrtGaussianState, TaggedWeightedGaussianState)
 
 
 class Prediction(Type):
@@ -38,6 +38,15 @@ class GaussianStatePrediction(Prediction, GaussianState):
 
     This is a simple Gaussian state prediction object, which, as the name
     suggests, is described by a Gaussian distribution.
+    """
+
+
+class GaussianStateWithExistencePrediction(Prediction, GaussianStateWithExistence):
+    """ GaussianStateWithExistencePrediction type
+
+    This is a Gaussian state with existence prediction object, which contains a
+    state described by a Gaussian distribution with a probability of existence
+    for this state.
     """
 
 

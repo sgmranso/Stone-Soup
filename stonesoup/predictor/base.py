@@ -5,12 +5,13 @@ from abc import abstractmethod
 from ..base import Base, Property
 from ..models.transition import TransitionModel
 from ..models.control import ControlModel
+from ..types.numeric import Probability
 
 
 class Predictor(Base):
-    r"""Predictor base class
+    r"""State predictor base class
 
-    A predictor is used to predict a new :class:`~.State` given a prior
+    A state predictor is used to predict a new :class:`~.State` given a prior
     :class:`~.State` and a :class:`~.TransitionModel`. In addition, a
     :class:`~.ControlModel` may be used to model an external influence on the
     state.

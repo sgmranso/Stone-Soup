@@ -2,7 +2,7 @@
 from ..base import Property
 from .base import Type
 from .hypothesis import Hypothesis
-from .state import State, GaussianState, ParticleState, SqrtGaussianState
+from .state import State, GaussianState, GaussianStateWithExistence, ParticleState, SqrtGaussianState
 from .mixture import GaussianMixture
 
 
@@ -29,6 +29,15 @@ class GaussianStateUpdate(Update, GaussianState):
 
     This is a simple Gaussian state update object, which, as the name
     suggests, is described by a Gaussian distribution.
+    """
+
+
+class GaussianStateWithExistenceUpdate(Update, GaussianStateWithExistence):
+    """ GaussianStateUpdate type
+
+    This is a Gaussian state with existence update object, which
+    describes a track defined by a Gaussian distribution along with
+    the track existence probabibility.
     """
 
 

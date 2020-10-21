@@ -500,17 +500,21 @@ def gm_reduce_single(means, covars, weights):
     : :class:`~.CovarianceMatrix`
         The covariance of the reduced/single Gaussian
     """
-    # Normalise weights such that they sum to 1
-    weights = weights/Probability.sum(weights)
+    dims = means.shape # dimensions from means
+    numelstate = dims[0] # state dimensions
+    numweights = dims[1] # number of weights
+    weights = weights/Probability.sum(weights) # normalise weights
+    post_mean = np.zeros([numelstate,1]) # preallocate posterior covariance matrix
+    for meas in range(numweights):
+        post_mean = post_mean + weights[meas]*np.matrix(means[:,meas]).T # posterior mean = weighted sum of means
+    
+    post_covar = np.zeros([numelstate,numelstate]) # preallocate posterior covariance matrix
+    for meas in range(numweights): # loop for each mean, covariance and weight
+        delta_mean = np.matrix(means[:,meas]).T-post_mean # mean error
+        sq_delta_mean = delta_mean@delta_mean.T # mean square error
+        post_covar = post_covar + weights[meas]*(covars[:,:,meas]+sq_delta_mean) # posterior covariance = weighted sum of covariance and mean square error
 
-    # Calculate mean
-    mean = np.average(means, axis=1, weights=weights)
-
-    # Calculate covar
-    delta_means = means - mean
-    covar = np.sum(covars*weights, axis=2, dtype=np.float_) + weights*delta_means@delta_means.T
-
-    return mean.view(StateVector), covar.view(CovarianceMatrix)
+    return StateVector(post_mean), CovarianceMatrix(post_covar)
 
 
 def mod_bearing(x):

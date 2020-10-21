@@ -141,6 +141,15 @@ class GaussianState(State):
         """The state mean, equivalent to state vector"""
         return self.state_vector
 
+class GaussianStateWithExistence(GaussianState):
+    """Gaussian State with existence type
+
+    This is a Gaussian state with an existence probability object, which
+    describes a state defined by a Gaussian state distribution and an
+    existence probability.
+    """
+    p_exist: Probability = Property(doc='Existence probability of state.')
+
 
 class SqrtGaussianState(State):
     """A Gaussian State type where the covariance matrix is stored in a form :math:`W` such that

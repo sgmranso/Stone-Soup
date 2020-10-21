@@ -210,3 +210,44 @@ class JPDA(DataAssociator):
                 measurements.add(measurement)
 
         return True
+
+class IPDA(DataAssociator):
+    """Integerated Probabilistic Data Association (IPDA)
+
+    Given a set of detections and a set of existing tracks, each track has a
+    probability that it is associated to each specific detection. There is
+    also a probability a new track appears according to the birth and death
+    probabilities.
+    """
+
+    hypothesiser: Hypothesiser = Property(
+        doc="Generate a set of hypotheses for each prediction-detection pair")
+
+    def associate(self, tracks, detections, time):
+        """Associate detections with predicted states.
+
+        Parameters
+        ----------
+        tracks : list of :class:`Track`
+            Current tracked objects
+        detections : list of :class:`Detection`
+            Retrieved measurements
+        time : datetime
+            Detection time to predict to
+
+        Returns
+        -------
+        dict
+            Key value pair of tracks with associated detection
+        """
+
+        # Generate a set of hypotheses for each track on each detection
+        hypotheses = {
+            track: self.hypothesiser.hypothesise(track, detections, time)
+            for track in tracks}
+
+        # Ensure association probabilities are normalised
+        for track, hypothesis in hypotheses.items():
+            hypothesis.normalise_probabilities(total_weight=1)
+
+        return hypotheses
