@@ -148,6 +148,8 @@ class GaussianStateWithExistence(GaussianState):
     describes a state defined by a Gaussian state distribution and an
     existence probability.
     """
+    # p_exist_idx: int = Property()
+
     p_exist: Probability = Property(doc='Existence probability of state.')
 
 

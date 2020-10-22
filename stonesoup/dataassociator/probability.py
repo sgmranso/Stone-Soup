@@ -42,8 +42,13 @@ class PDA(DataAssociator):
 
         # Generate a set of hypotheses for each track on each detection
         hypotheses = {
-            track: self.hypothesiser.hypothesise(track, detections, time)
-            for track in tracks}
+            track: self.hypothesiser.hypothesise(
+                track,
+                detections,
+                time
+            )
+            for track in tracks
+        }
 
         # Ensure association probabilities are normalised
         for track, hypothesis in hypotheses.items():
@@ -69,7 +74,7 @@ class JPDA(DataAssociator):
 
     then Detection is assumed to be outside Track's gate, and the probability
     of association is dropped from the Gaussian Mixture.  This calculation
-    takes place in the function :meth:`enumerate_JPDA_hypotheses`.
+    takes place in the function :meth:`enumerate_jpda_hypotheses`.
     """
 
     hypothesiser: PDAHypothesiser = Property(
@@ -96,12 +101,17 @@ class JPDA(DataAssociator):
         # Calculate MultipleHypothesis for each Track over all
         # available Detections
         hypotheses = {
-            track: self.hypothesiser.hypothesise(track, detections, time)
-            for track in tracks}
+            track: self.hypothesiser.hypothesise(
+                track,
+                detections,
+                time
+            )
+            for track in tracks
+        }
 
         # enumerate the Joint Hypotheses of track/detection associations
         joint_hypotheses = \
-            self.enumerate_JPDA_hypotheses(tracks, hypotheses)
+            self.enumerate_jpda_hypotheses(tracks, hypotheses)
 
         # Calculate MultiMeasurementHypothesis for each Track over all
         # available Detections with probabilities drawn from JointHypotheses
@@ -148,7 +158,7 @@ class JPDA(DataAssociator):
         return new_hypotheses
 
     @classmethod
-    def enumerate_JPDA_hypotheses(cls, tracks, multihypths):
+    def enumerate_jpda_hypotheses(cls, tracks, multihypths):
 
         joint_hypotheses = list()
 
@@ -169,13 +179,14 @@ class JPDA(DataAssociator):
             possible_assoc.append(track_possible_assoc)
 
         # enumerate all valid JPDA joint hypotheses
-        enum_JPDA_hypotheses = (
+        enum_jpda_hypotheses = (
             joint_hypothesis
             for joint_hypothesis in itertools.product(*possible_assoc)
-            if cls.isvalid(joint_hypothesis))
+            if cls.isvalid(joint_hypothesis)
+        )
 
         # turn the valid JPDA joint hypotheses into 'JointHypothesis'
-        for joint_hypothesis in enum_JPDA_hypotheses:
+        for joint_hypothesis in enum_jpda_hypotheses:
             local_hypotheses = {}
 
             for track, hypothesis in zip(tracks, joint_hypothesis):
@@ -211,8 +222,9 @@ class JPDA(DataAssociator):
 
         return True
 
+
 class IPDA(DataAssociator):
-    """Integerated Probabilistic Data Association (IPDA)
+    """Integrated Probabilistic Data Association (IPDA)
 
     Given a set of detections and a set of existing tracks, each track has a
     probability that it is associated to each specific detection. There is
@@ -243,11 +255,12 @@ class IPDA(DataAssociator):
 
         # Generate a set of hypotheses for each track on each detection
         hypotheses = {
-            track: self.hypothesiser.hypothesise(track, detections, time)
-            for track in tracks}
-
-        # Ensure association probabilities are normalised
-        for track, hypothesis in hypotheses.items():
-            hypothesis.normalise_probabilities(total_weight=1)
+            track: self.hypothesiser.hypothesise(
+                track,
+                detections,
+                time
+            )
+            for track in tracks
+        }
 
         return hypotheses

@@ -2,7 +2,7 @@
 
 import numpy as np
 import math
-from scipy.stats import multivariate_normal
+# from scipy.stats import multivariate_normal
 from scipy.stats import poisson as poisson
 
 from .base import Hypothesiser
@@ -11,11 +11,11 @@ from ..types.detection import MissedDetection
 from ..types.hypothesis import SingleProbabilityHypothesis
 from ..types.multihypothesis import MultipleHypothesis
 from ..types.numeric import Probability
-from ..types.state import GaussianState
-from ..types.state import GaussianStateWithExistence
+# from ..types.state import GaussianState
+# from ..types.state import GaussianStateWithExistence
 from ..predictor import Predictor
 from ..updater import Updater
-from ..functions import gm_reduce_single
+# from ..functions import gm_reduce_single
 
 
 class PDAHypothesiser(Hypothesiser):
@@ -30,8 +30,8 @@ class PDAHypothesiser(Hypothesiser):
     updater: Updater = Property(doc="Updater used to get measurement prediction")
     clutter_spatial_density: float = Property(
         doc="Spatial density of clutter - tied to probability of false detection")
-    surveillence_volume: float = Property(
-        doc="Surveillence volume - required to determine the expected quantity of clutter.")
+    surveillance_volume: float = Property(
+        doc="Surveillance volume - required to determine the expected quantity of clutter.")
     prob_detect: Probability = Property(
         default=Probability(0.85),
         doc="Target Detection Probability")
@@ -116,21 +116,21 @@ class PDAHypothesiser(Hypothesiser):
         """
 
         hypotheses = list()
-        prediction = self.predictor.predict(track, timestamp=timestamp)# state prediction
+        prediction = self.predictor.predict(track, timestamp=timestamp)  # state prediction
         probability = Probability(
-            (1 - self.prob_detect*self.prob_gate
-            ) * poisson.pmf( # poisson distribution pdf
-            len(detections), # all detections are clutter
-            self.clutter_spatial_density * self.surveillence_volume # expected number of clutter detections
+            (1 - self.prob_detect * self.prob_gate
+             ) * poisson.pmf(  # poisson distribution pdf
+                len(detections),  # all detections are clutter
+                self.clutter_spatial_density * self.surveillance_volume  # expected number of clutter detections
             )
-        ) # misdetection hypothesis
+        )  # mis-detection hypothesis
         hypotheses.append(
             SingleProbabilityHypothesis(
                 prediction,
                 MissedDetection(timestamp=timestamp),
                 probability
             )
-        ) # append
+        )  # append
 
         # True detection hypotheses
         for detection in detections:
@@ -139,22 +139,22 @@ class PDAHypothesiser(Hypothesiser):
                 prediction, detection.measurement_model)
             # Calculate difference before to handle custom types (mean defaults to zero)
             # This is required as log pdf coverts arrays to floats
-            #logpdf = multivariate_normal.logpdf(
+            # logpdf = multivariate_normal.logpdf(
             #    detection.state_vector-measurement_prediction.state_vector,
             #    cov=measurement_prediction.covar
-            #)
-            #pdf = Probability(logpdf)
-            err = detection.state_vector-measurement_prediction.state_vector
+            # )
+            # pdf = Probability(logpdf)
+            err = detection.state_vector - measurement_prediction.state_vector
             pdf = math.exp(
-                -0.5*err.T@np.matrix.getI(measurement_prediction.covar)@err
-            )/math.sqrt(
-                pow(2*math.pi,len(detection.state_vector))*np.linalg.det(measurement_prediction.covar)
+                -0.5 * err.T @ np.matrix.getI(measurement_prediction.covar) @ err
+            ) / math.sqrt(
+                pow(2 * math.pi, len(detection.state_vector)) * np.linalg.det(measurement_prediction.covar)
             )
             probability = Probability(
-                pdf * self.prob_detect * poisson.pmf( # poisson distribution pdf
-                len(detections)-1, # all but one detections are clutter
-                self.clutter_spatial_density * self.surveillence_volume # expected number of clutter detections
-                )/self.clutter_spatial_density
+                pdf * self.prob_detect * poisson.pmf(  # poisson distribution pdf
+                    len(detections) - 1,  # all but one detections are clutter
+                    self.clutter_spatial_density * self.surveillance_volume  # expected number of clutter detections
+                ) / self.clutter_spatial_density
             )
             hypotheses.append(
                 SingleProbabilityHypothesis(
@@ -162,7 +162,7 @@ class PDAHypothesiser(Hypothesiser):
                     detection,
                     probability,
                     measurement_prediction)
-            ) # True detection hypothesis
+            )  # True detection hypothesis
 
         return MultipleHypothesis(hypotheses, normalise=True, total_weight=1)
 
@@ -179,8 +179,8 @@ class IPDAHypothesiser(Hypothesiser):
     updater: Updater = Property(doc="Updater used to get measurement prediction")
     clutter_spatial_density: float = Property(
         doc="Spatial density of clutter - tied to probability of false detection")
-    surveillence_volume: float = Property(
-        doc="Surveillence volume - required to determine the expected quantity of clutter.")
+    surveillance_volume: float = Property(
+        doc="Surveillance volume - required to determine the expected quantity of clutter.")
     prob_detect: Probability = Property(
         default=Probability(0.85),
         doc="Target Detection Probability")
@@ -277,45 +277,47 @@ class IPDAHypothesiser(Hypothesiser):
         )
 
         # Missed detection hypothesis
-        probability = Probability( # probability class
-                ((1 - self.prob_detect*self.prob_gate) * prediction.probability # target exists, but is misdetected 
-                ) * poisson.pmf( # poisson distribution pdf
-                len(detections), # all detections are clutter
-                self.clutter_spatial_density*self.surveillence_volume # expected number of clutter detections
-                )
+        probability = Probability(  # probability class
+            ((1 - self.prob_detect * self.prob_gate) * prediction.p_exist  # target exists, but is mis-detected
+             ) * poisson.pmf(  # poisson distribution pdf
+                len(detections),  # all detections are clutter
+                self.clutter_spatial_density * self.surveillance_volume  # expected number of clutter detections
+            )
         )
         hypotheses.append(
             SingleProbabilityHypothesis(
                 prediction,
                 MissedDetection(timestamp=timestamp),
-                probability
+                probability,
             )
         )
 
+        # hyp_not_exist = SingleProbabilityHypothesis(None, None, 0.1)  # RE: discussion with Lyu about hypotheses
+
         # True detection hypotheses
         for detection in detections:
-            measurement_prediction = self.updater.predict_measurement( # measurement predictor object
-                prediction, # state prediction
-                detection.measurement_model # measurement model (done here, since multisensor detections need different models)
-            ) # measurement prediction
+            measurement_prediction = self.updater.predict_measurement(  # measurement predictor object
+                prediction,  # state prediction
+                detection.measurement_model  # measurement model (multi-sensor detections need different models)
+            )  # measurement prediction
             # Calculate difference before to handle custom types (mean defaults to zero)
             # This is required as log pdf coverts arrays to floats
-            #logpdf = multivariate_normal.logpdf(
+            # logpdf = multivariate_normal.logpdf(
             #    detection.state_vector-measurement_prediction.state_vector,
             #    cov=measurement_prediction.covar
-            #)
-            #pdf = Probability(logpdf)
-            err = detection.state_vector-measurement_prediction.state_vector
+            # )  # this breaks for some reason
+            # pdf = Probability(logpdf)  # see above; replaced below
+            err = detection.state_vector - measurement_prediction.state_vector
             pdf = math.exp(
-                -0.5*err.T@np.matrix.getI(measurement_prediction.covar)@err
-            )/math.sqrt(
-                pow(2*math.pi,len(detection.state_vector))*np.linalg.det(measurement_prediction.covar)
+                -0.5 * err.T @ np.matrix.getI(measurement_prediction.covar) @ err
+            ) / math.sqrt(
+                pow(2 * math.pi, len(detection.state_vector)) * np.linalg.det(measurement_prediction.covar)
             )
             probability = Probability(
-                (pdf * self.prob_detect * prediction.p_exist # target exists and is detected 
-                ) * poisson.pmf( # poisson distribution pdf
-                len(detections) - 1, # all but one detection is clutter
-                self.clutter_spatial_density*self.surveillence_volume # expected number of clutter detections 
+                (pdf * self.prob_detect * prediction.p_exist  # target exists and is detected
+                 ) * poisson.pmf(  # poisson distribution pdf
+                    len(detections) - 1,  # all but one detection is clutter
+                    self.clutter_spatial_density * self.surveillance_volume  # expected number of clutter detections
                 )/self.clutter_spatial_density
             )
 
@@ -328,5 +330,5 @@ class IPDAHypothesiser(Hypothesiser):
                     measurement_prediction
                 )
             )
-        
-        return MultipleHypothesis(hypotheses, normalise=True, total_weight=1)
+
+        return MultipleHypothesis(hypotheses)

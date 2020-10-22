@@ -20,7 +20,7 @@ class DataAssociator(Base):
         doc="Generate a set of hypotheses for each track-detection pair")
 
     @abstractmethod
-    def associate(self, tracks, detections, timestamp=None, **kwargs):
+    def associate(self, tracks, detections, timestamp, **kwargs):
         """Associate tracks and detections
 
         Parameters
