@@ -192,7 +192,7 @@ class KalmanPredictorWithExistence(KalmanPredictor):
 
         """
         dt = predict_over_interval.seconds+predict_over_interval.microseconds/1000000
-        return Probability(1-math.exp(-dt/self.target_existence_interval)) # usually the same as _death_probability
+        return Probability(1-math.exp(-dt/self.target_existence_interval))  # usually the same as _death_probability
 
     def _target_born_probability(self, prior, predict_over_interval, **kwargs):
         """Private function to return the probability a target is born.
@@ -231,7 +231,7 @@ class KalmanPredictorWithExistence(KalmanPredictor):
 
         """
         dt = predict_over_interval.seconds+predict_over_interval.microseconds/1000000
-        return 1-math.exp(-dt/self.target_absence_interval) # usually the same as _birth_probability
+        return 1-math.exp(-dt/self.target_absence_interval)  # usually the same as _birth_probability
     
     def _target_survive_probability(self, prior, predict_over_interval, **kwargs):
         """Private function to return the target survival probability.

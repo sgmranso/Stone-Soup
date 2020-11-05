@@ -25,12 +25,12 @@ from stonesoup.types.track import Track
 # simulation variables
 start_time = datetime.now()
 T = 20  # temporal length
-dt = 1  # timestep length
+dt = 1  # time step length
 dim = 2  # position dimensions
 sigma_b = numpy.array([100, 5])  # birth covariance coefficient
 sigma_x = 3  # process noise coefficient, q
 sigma_z = 3  # measurement noise coefficient, r
-Ns = 100  # number of particles
+Ns = 1000  # number of particles
 # birth density
 mu = numpy.array(numpy.repeat([0], 4))  # zero-mean state
 Sigma = numpy.diag(numpy.tile(numpy.power(sigma_b, 2), 2))  # birth density

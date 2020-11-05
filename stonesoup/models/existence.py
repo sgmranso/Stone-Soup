@@ -7,6 +7,7 @@ import numpy as np
 from .base import ExistenceModel
 from ..base import Property
 from ..types.numeric import Probability
+from ..types.state import GaussianState
 
 
 class BirthModel(ExistenceModel):
@@ -15,7 +16,9 @@ class BirthModel(ExistenceModel):
     """
 
     birth_probability: Probability = Property(doc="Birth model for a new track.")
-    
+
+    birth_density: GaussianState = Property(doc='The birth density', default=None)
+
     def birth_model(self):
         birth_probability = Probability(self.model_probability)
         return birth_probability

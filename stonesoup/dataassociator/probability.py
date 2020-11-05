@@ -263,4 +263,8 @@ class IPDA(DataAssociator):
             for track in tracks
         }
 
+        # Ensure association probabilities are normalised
+        for track, hypothesis in hypotheses.items():
+            hypothesis.normalise_probabilities(total_weight=1)
+
         return hypotheses
